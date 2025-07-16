@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, User, Building, ChevronsRight, FileJson, LogOut, ShieldCheck } from 'lucide-react';
+import { FileText, Plus, User, Building, ChevronsRight, FileJson, LogOut, ShieldCheck, ChevronRight } from 'lucide-react';
 
 // --- SUPABASE SETUP ---
 const supabaseUrl = 'https://mhhkmownhwfzzudgfwws.supabase.co';
