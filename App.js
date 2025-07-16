@@ -99,4 +99,169 @@ const Auth = ({ onLogin, supabase }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 border rounded-lg" required />
                 </div>
-                <button type="submit" disabled={loading} className="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-b
+                <button type="submit" disabled={loading} className="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400">
+                    {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
+                </button>
+                <p className="text-center text-sm">
+                    {isLogin ? "Don't have an account?" : "Already have an account?"}
+                    <button type="button" onClick={() => setIsLogin(!isLogin)} className="font-medium text-blue-600 hover:underline ml-1">
+                        {isLogin ? 'Sign Up' : 'Sign In'}
+                    </button>
+                </p>
+            </form>
+        </div>
+    );
+}
+
+// --- WORKFLOW STEPS ---
+
+const CreateTenderStep = ({ onNext, user, supabase }) => {
+    const [loading, setLoading] = useState(false);
+    const [tenderDetails, setTenderDetails] = useState({
+        sr_no: "SR-2025-0451",
+        description: "PROPOSED REPLACEMENT OF 33KV GIS FOR PMU BUKIT RAJA",
+        plant_name: "PMU BUKIT RAJA, SELANGOR",
+        procurement_mode: "Tender Two Envelope",
+    });
+
+    const handleChange = (e) => setTenderDetails({ ...tenderDetails, [e.target.name]: e.target.value });
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('tenders')
+            .insert([tenderDetails])
+            .select();
+            
+        if (error) {
+            alert(`Error creating tender: ${error.message}`);
+            setLoading(false);
+        } else {
+            onNext(data[0]); // Pass the newly created tender object to the next step
+        }
+    };
+
+    return (
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto border">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">1. Tender Setup</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><FileJson size={14} className="mr-2"/>SR No.</label>
+                        <input type="text" name="sr_no" value={tenderDetails.sr_no} onChange={handleChange} className="w-full p-3 border rounded-lg"/>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><Building size={14} className="mr-2"/>Plant Name</label>
+                        <input type="text" name="plant_name" value={tenderDetails.plant_name} onChange={handleChange} className="w-full p-3 border rounded-lg"/>
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><FileText size={14} className="mr-2"/>SR Description</label>
+                    <textarea name="description" value={tenderDetails.description} onChange={handleChange} rows="3" className="w-full p-3 border rounded-lg"></textarea>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><ChevronsRight size={14} className="mr-2"/>Procurement Mode</label>
+                    <select name="procurement_mode" value={tenderDetails.procurement_mode} onChange={handleChange} className="w-full p-3 border rounded-lg bg-white">
+                        <option>Tender Two Envelope</option><option>Tender Single Envelope</option><option>Quotation</option>
+                    </select>
+                </div>
+                <div className="pt-4 flex justify-end">
+                    <button type="submit" disabled={loading} className="flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-transform transform hover:scale-105">
+                        {loading ? 'Saving...' : 'Next: Upload Base Docs'} <ChevronRight className="ml-2" size={20} />
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+// Other steps (UploadBaseDocsStep, UploadVendorDocsStep, EvaluationDashboardStep) would be converted
+// similarly to use real Supabase calls instead of mock data. For this first version, we focus on creating the tender.
+
+// --- MAIN APP COMPONENT ---
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
+  const [clientInitialized, setClientInitialized] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0); // 0 = dashboard/home
+  const [activeTender, setActiveTender] = useState(null);
+
+  useEffect(() => {
+    // This effect runs once on mount to initialize the Supabase client.
+    // It uses a timer to wait for the Supabase script to load from the CDN.
+    const timer = setInterval(() => {
+      if (window.supabase) {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        setClientInitialized(true);
+        clearInterval(timer);
+      }
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    // This effect runs only after the client has been initialized.
+    if (!clientInitialized || !supabase) return;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [clientInitialized]);
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setUser(null);
+    setCurrentStep(0);
+    setActiveTender(null);
+  }
+
+  const renderContent = () => {
+    if (!clientInitialized) {
+        return <LoadingScreen text="Initializing Application..." />;
+    }
+    if (!session) {
+        return <Auth onLogin={setUser} supabase={supabase} />;
+    }
+    
+    switch (currentStep) {
+        case 1: return <CreateTenderStep onNext={(tender) => { setActiveTender(tender); setCurrentStep(2); }} user={user} supabase={supabase} />;
+        // Future steps would be rendered here
+        // case 2: return <UploadBaseDocsStep tender={activeTender} onNext... />;
+        default: return (
+            <div className="text-center">
+                <h2 className="text-3xl font-bold">Welcome, {user.email}</h2>
+                <p className="text-gray-500 mt-2">Select an option to get started.</p>
+                <button onClick={() => setCurrentStep(1)} className="mt-8 flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 mx-auto">
+                    <Plus size={20} className="mr-2"/> Create New Tender
+                </button>
+            </div>
+        );
+    }
+  }
+
+  return (
+    <div className="bg-gray-50 min-h-screen font-sans">
+      <Header user={user} onSignOut={handleSignOut} />
+      <main className="py-8 px-4">
+        {user && currentStep > 0 && <StepIndicator currentStep={currentStep} />}
+        <div className="max-w-7xl mx-auto">
+          {renderContent()}
+        </div>
+      </main>
+      <footer className="text-center py-4 text-sm text-gray-500">
+        <p>&copy; {new Date().getFullYear()} Smart Tender Evaluator. For Live Deployment.</p>
+      </footer>
+    </div>
+  );
+}
