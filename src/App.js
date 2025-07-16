@@ -81,6 +81,14 @@ const Header = ({ title, onMenuClick }) => (
     </header>
 );
 
+const LoadingScreen = ({ text }) => (
+    <div className="text-center p-12 bg-white rounded-xl shadow-lg">
+        <div className="flex justify-center items-center mb-4"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
+        <h2 className="text-2xl font-bold text-gray-800">{text}</h2>
+        <p className="text-gray-600 mt-2">This may take a few moments...</p>
+    </div>
+);
+
 // --- AUTHENTICATION COMPONENT ---
 const Auth = ({ onLogin, supabase }) => {
     const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [isLogin, setIsLogin] = useState(true); const [loading, setLoading] = useState(false); const [error, setError] = useState('');
