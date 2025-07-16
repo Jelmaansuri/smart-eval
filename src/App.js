@@ -30,10 +30,8 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
         lg:translate-x-0
     `;
 
-    // FIX: Using a wrapper div instead of a React Fragment (<>) to be more robust for some build tools.
-    // The original error was likely a typo like "class Name" instead of "className".
     return (
-        <div>
+        <>
             {/* Overlay for mobile */}
             {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"></div>}
             
@@ -70,7 +68,7 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
                     </div>
                 </div>
             </aside>
-        </div>
+        </>
     );
 };
 
