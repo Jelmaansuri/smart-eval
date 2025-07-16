@@ -30,8 +30,8 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
         lg:translate-x-0
     `;
 
-    // FIX: Removed the mobile overlay and ensured the component has a single root element.
-    // This resolves the parsing error seen in the Vercel build log.
+    // FIX: The entire component now returns a single <aside> element directly.
+    // The problematic mobile overlay and React.Fragment (<>) have been removed to ensure build success.
     return (
         <aside className={sidebarClasses}>
             <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
