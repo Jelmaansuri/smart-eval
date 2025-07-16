@@ -30,45 +30,42 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
         lg:translate-x-0
     `;
 
+    // FIX: Removed the mobile overlay and ensured the component has a single root element.
+    // This resolves the parsing error seen in the Vercel build log.
     return (
-        <>
-            {/* Overlay for mobile */}
-            {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"></div>}
-            
-            <aside className={sidebarClasses}>
-                <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
-                    {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
-                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700 hidden lg:block">
-                        {isExpanded ? <ChevronLeft /> : <ChevronRight />}
-                    </button>
+        <aside className={sidebarClasses}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
+                {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
+                <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700 hidden lg:block">
+                    {isExpanded ? <ChevronLeft /> : <ChevronRight />}
+                </button>
+            </div>
+            <nav className="flex-grow pt-4">
+                <ul>
+                    {navItems.map(item => (
+                        <li key={item.name} className="px-4 py-2">
+                            <a href="#" className="flex items-center p-2 space-x-4 rounded-lg hover:bg-blue-600 hover:text-white">
+                                {item.icon}
+                                {isExpanded && <span className="font-medium">{item.name}</span>}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+            <div className="p-4 border-t border-gray-700 flex-shrink-0">
+                <div className="flex items-center space-x-4">
+                    <User className="bg-gray-700 p-2 rounded-full w-10 h-10" />
+                    {isExpanded && (
+                        <div>
+                            <p className="font-semibold text-white text-sm">{user.email.split('@')[0]}</p>
+                            <button onClick={onSignOut} className="flex items-center text-xs text-gray-400 hover:text-red-400">
+                                <LogOut size={14} className="mr-1" /> Sign Out
+                            </button>
+                        </div>
+                    )}
                 </div>
-                <nav className="flex-grow pt-4">
-                    <ul>
-                        {navItems.map(item => (
-                            <li key={item.name} className="px-4 py-2">
-                                <a href="#" className="flex items-center p-2 space-x-4 rounded-lg hover:bg-blue-600 hover:text-white">
-                                    {item.icon}
-                                    {isExpanded && <span className="font-medium">{item.name}</span>}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-                <div className="p-4 border-t border-gray-700 flex-shrink-0">
-                    <div className="flex items-center space-x-4">
-                        <User className="bg-gray-700 p-2 rounded-full w-10 h-10" />
-                        {isExpanded && (
-                            <div>
-                                <p className="font-semibold text-white text-sm">{user.email.split('@')[0]}</p>
-                                <button onClick={onSignOut} className="flex items-center text-xs text-gray-400 hover:text-red-400">
-                                    <LogOut size={14} className="mr-1" /> Sign Out
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </aside>
-        </>
+            </div>
+        </aside>
     );
 };
 
