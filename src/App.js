@@ -22,13 +22,8 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded }) => {
         { icon: <Settings size={20} />, name: "Settings" },
     ];
 
-    const sidebarClasses = `
-        flex flex-col bg-gray-800 text-gray-300 transition-all duration-300 ease-in-out
-        ${isExpanded ? 'w-64' : 'w-20'}
-    `;
-
     return (
-        <aside className={sidebarClasses}>
+        <aside className={`flex flex-col bg-gray-800 text-gray-300 transition-all duration-300 ease-in-out ${isExpanded ? 'w-64' : 'w-20'}`}>
             <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
                 {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
                 <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700">
