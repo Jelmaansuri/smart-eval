@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, User, Building, ChevronsRight, FileJson, LogOut, ShieldCheck, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight, Plus, User, Building, ChevronsRight, FileJson, Menu } from 'lucide-react';
 
 // --- SUPABASE SETUP ---
 const supabaseUrl = 'https://mhhkmownhwfzzudgfwws.supabase.co';
@@ -13,34 +13,67 @@ const MOCK_ACTIVE_TENDERS = [
     { id: 3, sr_no: "SR-2025-0432", description: "PROCUREMENT OF FLEET VEHICLES", status: "Completed", vendors: 5 },
 ];
 
-// --- UI COMPONENTS ---
-const Header = ({ user, onSignOut }) => (
-    <header className="bg-white shadow-sm p-4 border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-                <div className="bg-blue-600 p-2 rounded-lg"><ShieldCheck className="h-6 w-6 text-white" /></div>
-                <h1 className="text-2xl font-bold text-gray-800">Smart Tender Evaluator</h1>
+// --- LAYOUT COMPONENTS ---
+const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded }) => {
+    const navItems = [
+        { icon: <LayoutDashboard size={20} />, name: "Dashboard" },
+        { icon: <FileText size={20} />, name: "Tenders" },
+        { icon: <CheckSquare size={20} />, name: "Templates" },
+        { icon: <Settings size={20} />, name: "Settings" },
+    ];
+
+    return (
+        <aside className={`flex-shrink-0 flex flex-col bg-gray-800 text-gray-300 transition-all duration-300 ease-in-out ${isExpanded ? 'w-64' : 'w-20'}`}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
+                {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
+                <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700">
+                    {isExpanded ? <ChevronLeft /> : <ChevronRight />}
+                </button>
             </div>
-            {user && (
-                <div className="flex items-center space-x-3">
-                     <div className="text-sm text-gray-500 text-right">
-                        <p className="font-semibold truncate max-w-[150px]">{user.email}</p>
-                        <p>Lead Evaluator</p>
-                    </div>
-                    <button onClick={onSignOut} className="p-2 rounded-lg hover:bg-gray-100" title="Sign Out">
-                        <LogOut size={20} className="text-gray-600" />
-                    </button>
+            <nav className="flex-grow pt-4">
+                <ul>
+                    {navItems.map(item => (
+                        <li key={item.name} className="px-4 py-2">
+                            <a href="#" className="flex items-center p-2 space-x-4 rounded-lg hover:bg-blue-600 hover:text-white">
+                                {item.icon}
+                                {isExpanded && <span className="font-medium">{item.name}</span>}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+            <div className="p-4 border-t border-gray-700 flex-shrink-0">
+                <div className="flex items-center space-x-4">
+                    <User className="bg-gray-700 p-2 rounded-full w-10 h-10" />
+                    {isExpanded && (
+                        <div>
+                            <p className="font-semibold text-white text-sm">{user.email.split('@')[0]}</p>
+                            <button onClick={onSignOut} className="flex items-center text-xs text-gray-400 hover:text-red-400">
+                                <LogOut size={14} className="mr-1" /> Sign Out
+                            </button>
+                        </div>
+                    )}
                 </div>
-            )}
-        </div>
+            </div>
+        </aside>
+    );
+};
+
+const Header = ({ title, onMenuClick }) => (
+    <header className="bg-white shadow-sm p-4 border-b border-gray-200 h-16 flex items-center justify-between lg:justify-start flex-shrink-0">
+        <button onClick={onMenuClick} className="p-2 rounded-lg hover:bg-gray-100 lg:hidden mr-4">
+            <Menu />
+        </button>
+        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
     </header>
 );
 
 const LoadingScreen = ({ text }) => (
     <div className="flex items-center justify-center h-screen">
-        <div className="text-center p-12">
+        <div className="text-center p-12 bg-white rounded-xl shadow-lg">
             <div className="flex justify-center items-center mb-4"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
-            <h2 className="text-xl font-bold text-gray-700">{text}</h2>
+            <h2 className="text-2xl font-bold text-gray-800">{text}</h2>
+            <p className="text-gray-600 mt-2">This may take a few moments...</p>
         </div>
     </div>
 );
@@ -56,9 +89,9 @@ const Auth = ({ onLogin, supabase }) => {
 const Dashboard = ({ onStartTender }) => (
     <div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow border"><h3 className="text-gray-500 font-semibold">Active Tenders</h3><p className="text-3xl font-bold text-blue-600">{MOCK_ACTIVE_TENDERS.filter(t => t.status === 'Evaluating').length}</p></div>
-            <div className="bg-white p-6 rounded-lg shadow border"><h3 className="text-gray-500 font-semibold">Completed This Month</h3><p className="text-3xl font-bold text-green-600">{MOCK_ACTIVE_TENDERS.filter(t => t.status === 'Completed').length}</p></div>
-            <div className="bg-white p-6 rounded-lg shadow border"><h3 className="text-gray-500 font-semibold">New Tenders</h3><p className="text-3xl font-bold text-yellow-600">{MOCK_ACTIVE_TENDERS.filter(t => t.status === 'New').length}</p></div>
+            <div className="bg-white p-6 rounded-lg shadow border"><h3 className="text-gray-500 font-semibold">Active Tenders</h3><p className="text-3xl font-bold text-blue-600">1</p></div>
+            <div className="bg-white p-6 rounded-lg shadow border"><h3 className="text-gray-500 font-semibold">Completed This Month</h3><p className="text-3xl font-bold text-green-600">4</p></div>
+            <div className="bg-white p-6 rounded-lg shadow border"><h3 className="text-gray-500 font-semibold">Pending Approval</h3><p className="text-3xl font-bold text-yellow-600">2</p></div>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
             <h2 className="text-xl font-bold text-gray-700">Tender Overview</h2>
@@ -88,7 +121,7 @@ const CreateTender = ({ onNext }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><FileJson size={14} className="mr-2"/>SR No.</label><input type="text" name="sr_no" value={tenderDetails.sr_no} onChange={handleChange} className="w-full p-3 border rounded-lg"/></div><div><label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><Building size={14} className="mr-2"/>Plant Name</label><input type="text" name="plant_name" value={tenderDetails.plant_name} onChange={handleChange} className="w-full p-3 border rounded-lg"/></div></div>
                 <div><label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><FileText size={14} className="mr-2"/>SR Description</label><textarea name="description" value={tenderDetails.description} onChange={handleChange} rows="3" className="w-full p-3 border rounded-lg"></textarea></div>
                 <div><label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><ChevronsRight size={14} className="mr-2"/>Procurement Mode</label><select name="procurement_mode" value={tenderDetails.procurement_mode} onChange={handleChange} className="w-full p-3 border rounded-lg bg-white"><option>Tender Two Envelope</option><option>Tender Single Envelope</option><option>Quotation</option></select></div>
-                <div className="pt-4 flex justify-end"><button type="submit" className="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105">Save and Continue <ChevronRight className="ml-2" size={20} /></button></div>
+                <div className="pt-4 flex justify-end"><button type="submit" className="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105">Next <ChevronRight className="ml-2" size={20} /></button></div>
             </form>
         </div>
     );
@@ -98,6 +131,8 @@ const CreateTender = ({ onNext }) => {
 export default function App() {
     const [user, setUser] = useState(null);
     const [clientInitialized, setClientInitialized] = useState(false);
+    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [currentView, setCurrentView] = useState('dashboard');
 
     useEffect(() => {
@@ -138,10 +173,10 @@ export default function App() {
     const renderContent = () => {
         switch (currentView) {
             case 'new_tender':
-                return <CreateTender onNext={() => setCurrentView('dashboard')} />;
+                return <><Header title="Create New Tender" onMenuClick={() => setIsMobileOpen(true)} /><div className="p-4 sm:p-8"><CreateTender onNext={() => setCurrentView('dashboard')} /></div></>;
             case 'dashboard':
             default:
-                return <Dashboard onStartTender={() => setCurrentView('new_tender')} />;
+                return <><Header title="Dashboard" onMenuClick={() => setIsMobileOpen(true)} /><div className="p-4 sm:p-8"><Dashboard onStartTender={() => setCurrentView('new_tender')} /></div></>;
         }
     };
 
@@ -149,12 +184,10 @@ export default function App() {
     if (!user) return <Auth onLogin={setUser} supabase={supabase} />;
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <Header user={user} onSignOut={handleSignOut} />
-            <main className="p-4 sm:p-8">
-                <div className="max-w-7xl mx-auto">
-                    {renderContent()}
-                </div>
+        <div className="flex h-screen bg-gray-100">
+            <Sidebar user={user} onSignOut={handleSignOut} isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
+            <main className="flex-1 flex flex-col overflow-y-auto">
+                {renderContent()}
             </main>
         </div>
     );
