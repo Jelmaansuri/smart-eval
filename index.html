@@ -30,15 +30,12 @@
     <script type="text/babel" data-presets="react">
         // --- REACT APPLICATION CODE ---
 
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
         
         // --- SUPABASE SETUP ---
         const supabaseUrl = 'https://mhhkmownhwfzzudgfwws.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJITVI5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oaGttb3duaHdmenp1ZGdmd3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2Mjg0OTcsImV4cCI6MjA2ODIwNDQ5N30.0gcK97vPkFqL-XWmbAfdgc6UTVjF1iyKfTVM9Y80LoU';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oaGttb3duaHdmenp1ZGdmd3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2Mjg0OTcsImV4cCI6MjA2ODIwNDQ5N30.0gcK97vPkFqL-XWmbAfdgc6UTVjF1iyKfTVM9Y80LoU';
         let supabase = null;
-        if(window.supabase) {
-            supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-        }
 
         // --- MOCK DATA (For GUI demonstration) ---
         const MOCK_ACTIVE_TENDERS = [
@@ -138,17 +135,24 @@
         // --- MAIN APP COMPONENT ---
         const App = () => {
             const [user, setUser] = useState(null);
-            const [clientInitialized, setClientInitialized] = useState(false);
+            const [librariesLoaded, setLibrariesLoaded] = useState(false);
             const [currentView, setCurrentView] = useState('dashboard');
 
             useEffect(() => {
-                if (supabase) {
-                    setClientInitialized(true);
-                }
+                // This effect waits for the external libraries (Supabase, Lucide) to be loaded onto the window object.
+                // This prevents the "race condition" error that was causing the blank screen.
+                const timer = setInterval(() => {
+                    if (window.supabase && window.lucide) {
+                        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                        setLibrariesLoaded(true);
+                        clearInterval(timer);
+                    }
+                }, 100);
+                return () => clearInterval(timer);
             }, []);
 
             useEffect(() => {
-                if (!clientInitialized || !supabase) return;
+                if (!librariesLoaded || !supabase) return;
                 const checkSession = async () => {
                     const { data: { session } } = await supabase.auth.getSession();
                     setUser(session?.user ?? null);
@@ -158,7 +162,7 @@
                     setUser(session?.user ?? null);
                 });
                 return () => subscription.unsubscribe();
-            }, [clientInitialized]);
+            }, [librariesLoaded]);
 
             const handleSignOut = async () => {
                 if (!supabase) return;
@@ -177,7 +181,7 @@
                 }
             };
 
-            if (!clientInitialized) return <LoadingScreen text="Initializing Application..." />;
+            if (!librariesLoaded) return <LoadingScreen text="Loading Libraries..." />;
             if (!user) return <Auth onLogin={setUser} supabase={supabase} />;
 
             return (
