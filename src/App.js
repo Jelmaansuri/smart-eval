@@ -32,7 +32,9 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
 
     return (
         <>
+            {/* Overlay for mobile */}
             {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"></div>}
+            
             <aside className={sidebarClasses}>
                 <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
                     {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
