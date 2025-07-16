@@ -30,42 +30,43 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
         lg:translate-x-0
     `;
 
-    // FIX: The entire component now returns a single <aside> element directly.
-    // The problematic mobile overlay and React.Fragment (<>) have been removed to ensure build success.
     return (
-        <aside className={sidebarClasses}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
-                {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
-                <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700 hidden lg:block">
-                    {isExpanded ? <ChevronLeft /> : <ChevronRight />}
-                </button>
-            </div>
-            <nav className="flex-grow pt-4">
-                <ul>
-                    {navItems.map(item => (
-                        <li key={item.name} className="px-4 py-2">
-                            <a href="#" className="flex items-center p-2 space-x-4 rounded-lg hover:bg-blue-600 hover:text-white">
-                                {item.icon}
-                                {isExpanded && <span className="font-medium">{item.name}</span>}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
-            <div className="p-4 border-t border-gray-700 flex-shrink-0">
-                <div className="flex items-center space-x-4">
-                    <User className="bg-gray-700 p-2 rounded-full w-10 h-10" />
-                    {isExpanded && (
-                        <div>
-                            <p className="font-semibold text-white text-sm">{user.email.split('@')[0]}</p>
-                            <button onClick={onSignOut} className="flex items-center text-xs text-gray-400 hover:text-red-400">
-                                <LogOut size={14} className="mr-1" /> Sign Out
-                            </button>
-                        </div>
-                    )}
+        <>
+            {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"></div>}
+            <aside className={sidebarClasses}>
+                <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
+                    {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
+                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700 hidden lg:block">
+                        {isExpanded ? <ChevronLeft /> : <ChevronRight />}
+                    </button>
                 </div>
-            </div>
-        </aside>
+                <nav className="flex-grow pt-4">
+                    <ul>
+                        {navItems.map(item => (
+                            <li key={item.name} className="px-4 py-2">
+                                <a href="#" className="flex items-center p-2 space-x-4 rounded-lg hover:bg-blue-600 hover:text-white">
+                                    {item.icon}
+                                    {isExpanded && <span className="font-medium">{item.name}</span>}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+                <div className="p-4 border-t border-gray-700 flex-shrink-0">
+                    <div className="flex items-center space-x-4">
+                        <User className="bg-gray-700 p-2 rounded-full w-10 h-10" />
+                        {isExpanded && (
+                            <div>
+                                <p className="font-semibold text-white text-sm">{user.email.split('@')[0]}</p>
+                                <button onClick={onSignOut} className="flex items-center text-xs text-gray-400 hover:text-red-400">
+                                    <LogOut size={14} className="mr-1" /> Sign Out
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 };
 
@@ -79,10 +80,12 @@ const Header = ({ title, onMenuClick }) => (
 );
 
 const LoadingScreen = ({ text }) => (
-    <div className="text-center p-12 bg-white rounded-xl shadow-lg">
-        <div className="flex justify-center items-center mb-4"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
-        <h2 className="text-2xl font-bold text-gray-800">{text}</h2>
-        <p className="text-gray-600 mt-2">This may take a few moments...</p>
+    <div className="flex items-center justify-center h-screen">
+        <div className="text-center p-12 bg-white rounded-xl shadow-lg">
+            <div className="flex justify-center items-center mb-4"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
+            <h2 className="text-2xl font-bold text-gray-800">{text}</h2>
+            <p className="text-gray-600 mt-2">This may take a few moments...</p>
+        </div>
     </div>
 );
 
@@ -105,7 +108,6 @@ const Dashboard = ({ onStartTender }) => (
             <h2 className="text-xl font-bold text-gray-700">Tender Overview</h2>
             <button onClick={onStartTender} className="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition"><Plus size={18} className="mr-2"/> New Tender</button>
         </div>
-        {/* Desktop Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden border hidden md:block">
             <table className="w-full text-left">
                 <thead className="bg-gray-50"><tr><th className="p-4 font-semibold text-sm">SR No.</th><th className="p-4 font-semibold text-sm">Description</th><th className="p-4 font-semibold text-sm">Status</th><th className="p-4 font-semibold text-sm">Vendors</th></tr></thead>
@@ -116,18 +118,11 @@ const Dashboard = ({ onStartTender }) => (
                 </tbody>
             </table>
         </div>
-        {/* Mobile Card List */}
         <div className="space-y-4 md:hidden">
             {MOCK_ACTIVE_TENDERS.map(tender => (
                 <div key={tender.id} className="bg-white p-4 rounded-lg shadow border">
-                    <div className="flex justify-between items-start">
-                        <p className="font-bold text-gray-800">{tender.description}</p>
-                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${tender.status === 'Evaluating' ? 'bg-yellow-100 text-yellow-800' : tender.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>{tender.status}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-500 mt-4">
-                        <span>{tender.sr_no}</span>
-                        <span>{tender.vendors} Vendors</span>
-                    </div>
+                    <div className="flex justify-between items-start"><p className="font-bold text-gray-800">{tender.description}</p><span className={`px-2 py-1 text-xs font-bold rounded-full ${tender.status === 'Evaluating' ? 'bg-yellow-100 text-yellow-800' : tender.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>{tender.status}</span></div>
+                    <div className="flex justify-between text-sm text-gray-500 mt-4"><span>{tender.sr_no}</span><span>{tender.vendors} Vendors</span></div>
                 </div>
             ))}
         </div>
@@ -155,7 +150,7 @@ const CreateTender = ({ onNext }) => {
 export default function App() {
     const [user, setUser] = useState(null);
     const [clientInitialized, setClientInitialized] = useState(false);
-    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+    const [isSidebarExpanded, setIsSidebarExpanded] = useState(window.innerWidth > 1024);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [currentView, setCurrentView] = useState('dashboard');
 
@@ -200,7 +195,7 @@ export default function App() {
         }
     };
 
-    if (!clientInitialized) return <div className="flex items-center justify-center h-screen"><LoadingScreen text="Initializing Application..." /></div>;
+    if (!clientInitialized) return <LoadingScreen text="Initializing Application..." />;
     if (!user) return <Auth onLogin={setUser} supabase={supabase} />;
 
     return (
