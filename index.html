@@ -139,8 +139,10 @@
             const [currentView, setCurrentView] = useState('dashboard');
 
             useEffect(() => {
+                // This effect waits for the external libraries (Supabase, Lucide) to be loaded onto the window object.
+                // It now checks that the lucide object is not empty before proceeding.
                 const timer = setInterval(() => {
-                    if (window.supabase && window.lucide) {
+                    if (window.supabase && window.lucide && Object.keys(window.lucide).length > 0) {
                         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
                         setLibraries({
                             supabase,
