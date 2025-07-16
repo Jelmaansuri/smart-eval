@@ -14,7 +14,7 @@ const MOCK_ACTIVE_TENDERS = [
 ];
 
 // --- LAYOUT COMPONENTS ---
-const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, setIsMobileOpen }) => {
+const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded }) => {
     const navItems = [
         { icon: <LayoutDashboard size={20} />, name: "Dashboard" },
         { icon: <FileText size={20} />, name: "Tenders" },
@@ -24,19 +24,14 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
 
     const sidebarClasses = `
         flex flex-col bg-gray-800 text-gray-300 transition-all duration-300 ease-in-out
-        fixed lg:relative inset-y-0 left-0 z-40
         ${isExpanded ? 'w-64' : 'w-20'}
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0
     `;
 
-    // DEFINITIVE FIX: Rewritten to ensure a single root element and correct JSX syntax.
-    // The problematic overlay is temporarily removed to guarantee the build succeeds.
     return (
         <aside className={sidebarClasses}>
             <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16 flex-shrink-0">
                 {isExpanded && <span className="text-xl font-bold text-white">SmartEval</span>}
-                <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700 hidden lg:block">
+                <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 rounded-lg hover:bg-gray-700">
                     {isExpanded ? <ChevronLeft /> : <ChevronRight />}
                 </button>
             </div>
@@ -69,11 +64,8 @@ const Sidebar = ({ user, onSignOut, isExpanded, setIsExpanded, isMobileOpen, set
     );
 };
 
-const Header = ({ title, onMenuClick }) => (
-    <header className="bg-white shadow-sm p-4 border-b border-gray-200 h-16 flex items-center justify-between lg:justify-start">
-        <button onClick={onMenuClick} className="p-2 rounded-lg hover:bg-gray-100 lg:hidden mr-4">
-            <Menu />
-        </button>
+const Header = ({ title }) => (
+    <header className="bg-white shadow-sm p-4 border-b border-gray-200 h-16 flex items-center">
         <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
     </header>
 );
@@ -107,7 +99,7 @@ const Dashboard = ({ onStartTender }) => (
             <h2 className="text-xl font-bold text-gray-700">Tender Overview</h2>
             <button onClick={onStartTender} className="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition"><Plus size={18} className="mr-2"/> New Tender</button>
         </div>
-        <div className="bg-white rounded-lg shadow overflow-hidden border hidden md:block">
+        <div className="bg-white rounded-lg shadow overflow-hidden border">
             <table className="w-full text-left">
                 <thead className="bg-gray-50"><tr><th className="p-4 font-semibold text-sm">SR No.</th><th className="p-4 font-semibold text-sm">Description</th><th className="p-4 font-semibold text-sm">Status</th><th className="p-4 font-semibold text-sm">Vendors</th></tr></thead>
                 <tbody>
@@ -116,14 +108,6 @@ const Dashboard = ({ onStartTender }) => (
                     ))}
                 </tbody>
             </table>
-        </div>
-        <div className="space-y-4 md:hidden">
-            {MOCK_ACTIVE_TENDERS.map(tender => (
-                <div key={tender.id} className="bg-white p-4 rounded-lg shadow border">
-                    <div className="flex justify-between items-start"><p className="font-bold text-gray-800">{tender.description}</p><span className={`px-2 py-1 text-xs font-bold rounded-full ${tender.status === 'Evaluating' ? 'bg-yellow-100 text-yellow-800' : tender.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>{tender.status}</span></div>
-                    <div className="flex justify-between text-sm text-gray-500 mt-4"><span>{tender.sr_no}</span><span>{tender.vendors} Vendors</span></div>
-                </div>
-            ))}
         </div>
     </div>
 );
@@ -149,8 +133,7 @@ const CreateTender = ({ onNext }) => {
 export default function App() {
     const [user, setUser] = useState(null);
     const [clientInitialized, setClientInitialized] = useState(false);
-    const [isSidebarExpanded, setIsSidebarExpanded] = useState(window.innerWidth > 1024);
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const [currentView, setCurrentView] = useState('dashboard');
 
     useEffect(() => {
@@ -187,10 +170,10 @@ export default function App() {
     const renderContent = () => {
         switch (currentView) {
             case 'new_tender':
-                return <><Header title="Create New Tender" onMenuClick={() => setIsMobileOpen(true)} /><div className="p-4 sm:p-8"><CreateTender onNext={() => setCurrentView('dashboard')} /></div></>;
+                return <><Header title="Create New Tender" /><div className="p-4 sm:p-8"><CreateTender onNext={() => setCurrentView('dashboard')} /></div></>;
             case 'dashboard':
             default:
-                return <><Header title="Dashboard" onMenuClick={() => setIsMobileOpen(true)} /><div className="p-4 sm:p-8"><Dashboard onStartTender={() => setCurrentView('new_tender')} /></div></>;
+                return <><Header title="Dashboard" /><div className="p-4 sm:p-8"><Dashboard onStartTender={() => setCurrentView('new_tender')} /></div></>;
         }
     };
 
@@ -199,7 +182,7 @@ export default function App() {
 
     return (
         <div className="flex h-screen bg-gray-100">
-            <Sidebar user={user} onSignOut={handleSignOut} isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
+            <Sidebar user={user} onSignOut={handleSignOut} isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} />
             <main className="flex-1 flex flex-col overflow-y-auto">
                 {renderContent()}
             </main>
