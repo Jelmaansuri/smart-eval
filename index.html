@@ -45,8 +45,8 @@
         ];
 
         // --- UI COMPONENTS ---
-        const Header = ({ user, onSignOut }) => {
-            const { ShieldCheck, User, LogOut } = window.lucide;
+        const Header = ({ user, onSignOut, icons }) => {
+            const { ShieldCheck, User, LogOut } = icons;
             return (
                 <header className="bg-white shadow-sm p-4 border-b border-gray-200 sticky top-0 z-20">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -87,8 +87,8 @@
         }
 
         // --- DASHBOARD & WORKFLOW COMPONENTS ---
-        const Dashboard = ({ onStartTender }) => {
-            const { Plus } = window.lucide;
+        const Dashboard = ({ onStartTender, icons }) => {
+            const { Plus } = icons;
             return (
                 <div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -114,8 +114,8 @@
             );
         }
 
-        const CreateTender = ({ onNext }) => {
-            const { FileJson, Building, FileText, ChevronsRight, ChevronRight } = window.lucide;
+        const CreateTender = ({ onNext, icons }) => {
+            const { FileJson, Building, FileText, ChevronsRight, ChevronRight } = icons;
             const [tenderDetails, setTenderDetails] = useState({ sr_no: "SR-2025-0452", description: "ANNUAL MAINTENANCE FOR FIRE FIGHTING SYSTEM", plant_name: "HQ, BANGSAR", procurement_mode: "Tender Two Envelope", });
             const handleChange = (e) => setTenderDetails({ ...tenderDetails, [e.target.name]: e.target.value });
             const handleSubmit = (e) => { e.preventDefault(); onNext(tenderDetails); };
@@ -135,16 +135,17 @@
         // --- MAIN APP COMPONENT ---
         const App = () => {
             const [user, setUser] = useState(null);
-            const [librariesLoaded, setLibrariesLoaded] = useState(false);
+            const [libraries, setLibraries] = useState(null);
             const [currentView, setCurrentView] = useState('dashboard');
 
             useEffect(() => {
-                // This effect waits for the external libraries (Supabase, Lucide) to be loaded onto the window object.
-                // This prevents the "race condition" error that was causing the blank screen.
                 const timer = setInterval(() => {
                     if (window.supabase && window.lucide) {
                         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-                        setLibrariesLoaded(true);
+                        setLibraries({
+                            supabase,
+                            icons: window.lucide
+                        });
                         clearInterval(timer);
                     }
                 }, 100);
@@ -152,41 +153,40 @@
             }, []);
 
             useEffect(() => {
-                if (!librariesLoaded || !supabase) return;
+                if (!libraries) return;
                 const checkSession = async () => {
-                    const { data: { session } } = await supabase.auth.getSession();
+                    const { data: { session } } = await libraries.supabase.auth.getSession();
                     setUser(session?.user ?? null);
                 };
                 checkSession();
-                const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+                const { data: { subscription } } = libraries.supabase.auth.onAuthStateChange((_event, session) => {
                     setUser(session?.user ?? null);
                 });
                 return () => subscription.unsubscribe();
-            }, [librariesLoaded]);
+            }, [libraries]);
 
             const handleSignOut = async () => {
-                if (!supabase) return;
-                await supabase.auth.signOut();
+                if (!libraries) return;
+                await libraries.supabase.auth.signOut();
                 setUser(null);
-                setCurrentView('dashboard');
             };
 
             const renderContent = () => {
                 switch (currentView) {
                     case 'new_tender':
-                        return <CreateTender onNext={() => setCurrentView('dashboard')} />;
+                        return <CreateTender onNext={() => setCurrentView('dashboard')} icons={libraries.icons} />;
                     case 'dashboard':
                     default:
-                        return <Dashboard onStartTender={() => setCurrentView('new_tender')} />;
+                        return <Dashboard onStartTender={() => setCurrentView('new_tender')} icons={libraries.icons} />;
                 }
             };
 
-            if (!librariesLoaded) return <LoadingScreen text="Loading Libraries..." />;
-            if (!user) return <Auth onLogin={setUser} supabase={supabase} />;
+            if (!libraries) return <LoadingScreen text="Loading Libraries..." />;
+            if (!user) return <Auth onLogin={setUser} supabase={libraries.supabase} />;
 
             return (
                 <div className="min-h-screen bg-gray-100">
-                    <Header user={user} onSignOut={handleSignOut} />
+                    <Header user={user} onSignOut={handleSignOut} icons={libraries.icons} />
                     <main className="p-4 sm:p-8">
                         <div className="max-w-7xl mx-auto">
                             {renderContent()}
