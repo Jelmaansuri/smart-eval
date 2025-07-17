@@ -171,10 +171,10 @@
             const renderContent = () => {
                 switch (currentView) {
                     case 'new_tender':
-                        return <CreateTender onNext={() => setCurrentView('dashboard')} icons={window.lucide} />;
+                        return <CreateTender onNext={() => setCurrentView('dashboard')} />;
                     case 'dashboard':
                     default:
-                        return <Dashboard onStartTender={() => setCurrentView('new_tender')} icons={window.lucide} />;
+                        return <Dashboard onStartTender={() => setCurrentView('new_tender')} />;
                 }
             };
 
@@ -183,7 +183,7 @@
 
             return (
                 <div className="min-h-screen bg-gray-100">
-                    <Header user={user} onSignOut={handleSignOut} icons={window.lucide} />
+                    <Header user={user} onSignOut={handleSignOut} />
                     <main className="p-4 sm:p-8">
                         <div className="max-w-7xl mx-auto">
                             {renderContent()}
