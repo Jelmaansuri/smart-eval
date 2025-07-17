@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+// This line requires the '@supabase/supabase-js' package.
+// To install it, run: npm install @supabase/supabase-js
 import { createClient } from '@supabase/supabase-js';
 import { FileText, Plus, User, Building, ChevronsRight, FileJson, LogOut, ShieldCheck, ChevronRight } from 'lucide-react';
 
