@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { LayoutDashboard, FileText, CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight, Plus, User, Building, ChevronsRight, FileJson, Menu } from 'lucide-react';
 
-// --- SUPABASE SETUP ---
+// --- SUPABAS SETUP ---
 const supabaseUrl = 'https://mhhkmownhwfzzudgfwws.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oaGttb3duaHdmenp1ZGdmd3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2Mjg0OTcsImV4cCI6MjA2ODIwNDQ5N30.0gcK97vPkFqL-XWmbAfdgc6UTVjF1iyKfTVM9Y80LoU';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
